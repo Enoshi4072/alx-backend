@@ -1,42 +1,58 @@
-#!/usr/bin/python3
-""" Impoer OrderedDict for ordered dictionary functionality"""
-from collections import OrderedDict, defaultdict
-from datetime import datetime
-#Import the basecaching
+#!/usr/bin/env python3
+"""Least Frequently Used caching module.
+"""
+from collections import OrderedDict
+
 from base_caching import BaseCaching
-#define LFU cache algo
+
+
 class LFUCache(BaseCaching):
-    #Initialize
+    """Represents a caching system using the LFU algorithm."""
+
     def __init__(self):
-        #call the parent class's constructor
+        """Initialize the LFU cache."""
         super().__init__()
-        self.frequency = defaultdict(int)
-        self.cache_time = {}
+        self.keys_freq = {}
+        self.frequency = {}
 
     def put(self, key, item):
+        """Add an item to the cache."""
         if key is None or item is None:
             return
         if key in self.cache_data:
             self.cache_data[key] = item
-            self.frequency[key] += 1
-        elif len(self.cache_data) + 1 > self.MAX_ITEMS:
-            min_freq = min(self.frequency.values())
-            lfu_keys = [k for k, v in self.frequency.items() if v == min_freq]
-            if len(lfu_keys) == 1:
-                removed_key = lfu_keys[0]
-            else:
-                removed_key = min(self.cache_data, key=lambda k: self.cache_time[k])
-            print("DISCARD: {}".format(removed_key))
-            self.cache_data.pop(removed_key)
-            self.frequency.pop(removed_key)
-            self.cache_time.pop(removed_key)
+            self.keys_freq[key] += 1
         else:
+            if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
+                self.__evict()
             self.cache_data[key] = item
-            self.frequency[key] = 1
-            self.cache_time[key] = datetime.now()
+            self.keys_freq[key] = 1
+        freq = self.keys_freq[key]
+        if freq not in self.frequency:
+            self.frequency[freq] = []
+        self.frequency[freq].append(key)
 
     def get(self, key):
+        """Retrieve an item from the cache."""
         if key is None or key not in self.cache_data:
             return None
-        self.frequency[key] += 1
-        self.cache_data[key]
+        self.keys_freq[key] += 1
+        freq = self.keys_freq[key] - 1
+        self.frequency[freq].remove(key)
+        if not self.frequency[freq]:
+            del self.frequency[freq]
+        if self.keys_freq[key] not in self.frequency:
+            self.frequency[self.keys_freq[key]] = []
+        self.frequency[self.keys_freq[key]].append(key)
+        return self.cache_data[key]
+
+    def __evict(self):
+        """Evict the least frequently used item(s) from the cache."""
+        min_freq = min(self.frequency.keys())
+        lfu_key = self.frequency[min_freq][0]
+        print("DISCARD:", lfu_key)
+        del self.cache_data[lfu_key]
+        del self.keys_freq[lfu_key]
+        self.frequency[min_freq].pop(0)
+        if not self.frequency[min_freq]:
+            del self.frequency[min_freq]
