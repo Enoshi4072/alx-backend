@@ -1,0 +1,10 @@
+// Copy the code written previously
+// Add two functions:
+a) setNewsSchool:
+- Accepts two arguments schoolName and value
+- Set in Redis the value for the key schoolName
+- Display a confirmation message using redis.print
+b) displaySchoolValue
+- Accept one arg schoolName
+- Should log to the console the value for the key passed as arg
+

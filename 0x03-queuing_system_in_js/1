@@ -1,0 +1,6 @@
+// Use babela nd ES6, write a script named 0-redis_client.js
+// Connect to the redis server running on the machine
+// Log to the console the message Redis client connected to the server when the connection to Redis works correctly
+// Log to the console the message, Rdis client not connected to the server
+// The ERROR_MESSAGE when the connection to Redis does not work
+// To import the library, use the keyword import
